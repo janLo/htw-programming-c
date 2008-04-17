@@ -61,8 +61,20 @@ GtkTreeIter getIterByFilename(char *filename){
   return iter;
 }
 
+void checkModify(char *filename){
+  if(IsPhoneListModified(filename)){
+    if(askYesNo("Liste geaendert, noch speichern?")){
+      g_print ("Save\n");
+      SavePhoneList(filename); 
+    }
+  }
+}
+
 gboolean closeListByName(char *name){
   GtkTreeIter iter = getIterByFilename(name);
+
+  checkModify(name);
+  RemovePhoneList(name);
   return gtk_list_store_remove(listsListStore, &iter);
 }
 
@@ -81,15 +93,6 @@ int askYesNo(char *title){
   return ret;
 }
 
-void checkModify(char *filename){
-  if(IsPhoneListModified(filename)){
-    if(askYesNo("Liste geaendert, noch speichern?")){
-      g_print ("Save\n");
-      SavePhoneList(filename); 
-    }
-  }
-}
-
 void closeButtonClicked(GtkWidget *widget, GdkEvent *event, gpointer data){
   g_print ("Close\n");
   GtkTreeIter iter;
@@ -97,10 +100,6 @@ void closeButtonClicked(GtkWidget *widget, GdkEvent *event, gpointer data){
   if(gtk_tree_selection_get_selected (listsListSel, NULL, &iter)){
 
     gtk_tree_model_get((GtkTreeModel*)listsListStore, &iter, NAME_LISTS_COLUMN, &name, -1);
-    
-    //TODO modificatios Implemetieren
-
-    RemovePhoneList(name);
     gtk_list_store_remove(listsListStore, &iter);
   }
 }
@@ -139,12 +138,14 @@ void loadButtonClicked(GtkWidget *widget, GdkEvent *event, gpointer data){
       }
     } else {
       if(askYesNo("Schon geladen, neu Laden?")){
-	checkModify(filename);
-	// TODO Implementieren
+	closeListByName(filename);
+	// TODO NeuLaden Implementieren
       }
     }
     GtkTreeIter iter = getIterByFilename(filename);
-    gtk_tree_selection_select_iter(listsListSel, &iter);
+    if(gtk_list_store_iter_is_valid(listsListStore, &iter)){
+      gtk_tree_selection_select_iter(listsListSel, &iter);
+    }
     g_free (filename);
   }
   gtk_widget_destroy (fileSel);

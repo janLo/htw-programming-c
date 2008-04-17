@@ -110,7 +110,7 @@ tPhoneList * GetPhoneListElm(char * name){
   }
 
   do {
-    printf("Vergleiche: %s (%p) <=> %s (%p)\n", walker->listName, name);
+    printf("Vergleiche: %s <=> %s \n", walker->listName, name);
     if (strcmp(walker->listName, name) == 0){
       return walker;
     }
