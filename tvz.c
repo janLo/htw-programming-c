@@ -41,28 +41,29 @@ void addListsListElm(char *name){
   gtk_list_store_set(listsListStore, &iter, NAME_LISTS_COLUMN, name,-1);
 }
 
-GtkTreeIter *getIterByFilename(char *filename){
+GtkTreeIter getIterByFilename(char *filename){
   gchar *str_data;
-  GtkTreeIter *iter;
+  GtkTreeIter iter;
   gboolean valid;
   
-  valid = gtk_tree_model_get_iter_first ((GtkTreeModel*)listsListStore, iter);
+  valid = gtk_tree_model_get_iter_first ((GtkTreeModel*)listsListStore, &iter);
 
   while (valid){
-    gtk_tree_model_get ((GtkTreeModel*)listsListStore, iter,NAME_LISTS_COLUMN, &str_data,-1);
+    gtk_tree_model_get ((GtkTreeModel*)listsListStore, &iter,NAME_LISTS_COLUMN, &str_data,-1);
 
     if(strcmp(filename,str_data) == 0){
       g_free (str_data);
       return iter;
     }
     g_free (str_data);
-    valid = gtk_tree_model_iter_next ((GtkTreeModel*)listsListStore, iter);
+    valid = gtk_tree_model_iter_next ((GtkTreeModel*)listsListStore, &iter);
   }
-  return NULL;
+  return iter;
 }
 
 gboolean closeListByName(char *name){
-  return gtk_list_store_remove(listsListStore, getIterByFilename(name));
+  GtkTreeIter iter = getIterByFilename(name);
+  return gtk_list_store_remove(listsListStore, &iter);
 }
 
 int askYesNo(char *title){
@@ -142,7 +143,8 @@ void loadButtonClicked(GtkWidget *widget, GdkEvent *event, gpointer data){
 	// TODO Implementieren
       }
     }
-    gtk_tree_selection_select_iter(listsListSel, getIterByFilename(filename));
+    GtkTreeIter iter = getIterByFilename(filename);
+    gtk_tree_selection_select_iter(listsListSel, &iter);
     g_free (filename);
   }
   gtk_widget_destroy (fileSel);
@@ -151,9 +153,11 @@ void loadButtonClicked(GtkWidget *widget, GdkEvent *event, gpointer data){
 /* Wird vor dem beenden ausgefuehrt,
  * fragt ob gespeichert werden soll */
 static gboolean delete_event( GtkWidget *widget, GdkEvent *event, gpointer data){
-  if(askYesNo("noch Speichern?")){
-    g_print ("SaveAll\n");
-    writeAllLists();
+  if(anyModifiedPhoneLists()){
+    if(askYesNo("noch Speichern?")){
+      g_print ("SaveAll\n");
+      writeAllLists();
+    }
   }
   
   return FALSE;
