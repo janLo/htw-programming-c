@@ -19,10 +19,10 @@
 
 enum
 {
-  NAME_COLUMN,
-  GIVEN_COLUMN,
+  PHONE_NAME_COLUMN,
+  PHONE_GIVEN_COLUMN,
   PHONE_COLUMN,
-  N_COLUMNS
+  PHONE_N_COLUMNS
 };
 enum
 {
@@ -33,7 +33,9 @@ enum
 GtkWidget *main_app_window;
 GladeXML *xml;
 GtkListStore *listsListStore;
+GtkListStore *phoneDefaultStore;
 GtkTreeSelection *listsListSel;
+GtkTreeSelection *phoneListSel;
 
 void addListsListElm(char *name){
   GtkTreeIter iter;
@@ -143,6 +145,12 @@ void closeButtonClicked(GtkWidget *widget, GdkEvent *event, gpointer data){
     if(gtk_list_store_iter_is_valid(listsListStore, &iter)){
       gtk_tree_model_get((GtkTreeModel*)listsListStore, &iter, NAME_LISTS_COLUMN, &name, -1);
       closeListByName(name, &iter);
+      if(gtk_tree_model_get_iter_first ((GtkTreeModel*)listsListStore, &iter)){
+	gtk_tree_selection_select_iter(listsListSel, &iter);
+      } else {
+        // TODO Select default
+      }
+      
     }
 
   }
@@ -211,14 +219,40 @@ void initPhonListsList(){
   gtk_tree_selection_set_mode (listsListSel, GTK_SELECTION_SINGLE);
   gtk_container_add((GtkContainer*)glade_xml_get_widget(xml, "PhoneListsScroll"), listsList);
   gtk_widget_show(listsList);
- 
-/*  gtk_list_store_append(listsListStore, &iter);
-  gtk_list_store_set(listsListStore, &iter, NAME_LISTS_COLUMN, "blaasd",-1);
-  gtk_list_store_append(listsListStore, &iter);
-  gtk_list_store_set(listsListStore, &iter, NAME_LISTS_COLUMN, "blubb",-1);
-  gtk_list_store_append(listsListStore, &iter);
-  gtk_list_store_set(listsListStore, &iter, NAME_LISTS_COLUMN, "abc",-1);
-*/
+}
+
+void initPhoneList(){
+  GtkWidget *phoneView;
+  GtkTreeIter iter;
+  GtkCellRenderer *renderer;
+  GtkTreeViewColumn *column;
+  
+  phoneDefaultStore = gtk_list_store_new(PHONE_N_COLUMNS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING); 
+  phoneView = gtk_tree_view_new_with_model (GTK_TREE_MODEL (phoneDefaultStore));
+  renderer = gtk_cell_renderer_text_new();
+  column = gtk_tree_view_column_new_with_attributes ("Name",
+      renderer,
+      "text", PHONE_NAME_COLUMN,
+      NULL);
+  gtk_tree_view_append_column (GTK_TREE_VIEW (phoneView), column);
+  renderer = gtk_cell_renderer_text_new();
+  column = gtk_tree_view_column_new_with_attributes ("Given",
+      renderer,
+      "text", PHONE_GIVEN_COLUMN,
+      NULL);
+  gtk_tree_view_append_column (GTK_TREE_VIEW (phoneView), column);
+  renderer = gtk_cell_renderer_text_new();
+  column = gtk_tree_view_column_new_with_attributes ("Phone",
+      renderer,
+      "text", PHONE_COLUMN,
+      NULL);
+  gtk_tree_view_append_column (GTK_TREE_VIEW (phoneView), column);
+
+  phoneListSel = gtk_tree_view_get_selection (GTK_TREE_VIEW (phoneView));
+  gtk_tree_selection_set_mode (phoneListSel, GTK_SELECTION_SINGLE);
+  gtk_container_add((GtkContainer*)glade_xml_get_widget(xml, "PhoneListScroll"), phoneView);
+  gtk_widget_show(phoneView);
+
 }
 
 
@@ -239,6 +273,7 @@ int main(int argc, char *argv[]) {
   g_signal_connect (G_OBJECT (main_app_window), "destroy", G_CALLBACK (destroy), NULL);
 
   initPhonListsList();
+  initPhoneList();
 
   gtk_main();
   return 0;

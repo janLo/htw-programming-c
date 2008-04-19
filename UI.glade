@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.3 on Thu Apr 17 19:00:12 2008 -->
+<!--Generated with glade3 3.4.3 on Sat Apr 19 12:50:53 2008 -->
 <glade-interface>
   <widget class="GtkWindow" id="AppWindow">
     <property name="visible">True</property>
@@ -15,7 +15,7 @@
             <child>
               <widget class="GtkToolButton" id="LoadButton">
                 <property name="visible">True</property>
-                <property name="label" translatable="yes">Load</property>
+                <property name="label" translatable="yes">Liste Laden</property>
                 <signal name="clicked" handler="loadButtonClicked"/>
               </widget>
               <packing>
@@ -25,7 +25,7 @@
             <child>
               <widget class="GtkToolButton" id="SaveButton">
                 <property name="visible">True</property>
-                <property name="label" translatable="yes">Save</property>
+                <property name="label" translatable="yes">Liste Speichen</property>
                 <signal name="clicked" handler="saveButtonClicked"/>
               </widget>
               <packing>
@@ -35,7 +35,7 @@
             <child>
               <widget class="GtkToolButton" id="SaveAllButton">
                 <property name="visible">True</property>
-                <property name="label" translatable="yes">SaveAll</property>
+                <property name="label" translatable="yes">Alles Speichern</property>
                 <signal name="clicked" handler="saveAllButtonClicked"/>
               </widget>
               <packing>
@@ -45,7 +45,7 @@
             <child>
               <widget class="GtkToolButton" id="CloseButton">
                 <property name="visible">True</property>
-                <property name="label" translatable="yes">Close</property>
+                <property name="label" translatable="yes">Liste Schliessen</property>
                 <signal name="clicked" handler="closeButtonClicked"/>
               </widget>
               <packing>
@@ -55,8 +55,43 @@
             <child>
               <widget class="GtkToolButton" id="NewButton">
                 <property name="visible">True</property>
-                <property name="label" translatable="yes">New</property>
+                <property name="label" translatable="yes">Neue Liste</property>
                 <signal name="clicked" handler="newButtonClicked"/>
+              </widget>
+              <packing>
+                <property name="expand">False</property>
+              </packing>
+            </child>
+            <child>
+              <widget class="GtkSeparatorToolItem" id="div1">
+                <property name="visible">True</property>
+              </widget>
+              <packing>
+                <property name="expand">False</property>
+              </packing>
+            </child>
+            <child>
+              <widget class="GtkToolButton" id="newEntryButton">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">Neuer Eintrag</property>
+              </widget>
+              <packing>
+                <property name="expand">False</property>
+              </packing>
+            </child>
+            <child>
+              <widget class="GtkToolButton" id="modifyEntryButton">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">Eintrag bearbeiten</property>
+              </widget>
+              <packing>
+                <property name="expand">False</property>
+              </packing>
+            </child>
+            <child>
+              <widget class="GtkToolButton" id="removeEntryButton">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">Eintrag entfernen</property>
               </widget>
               <packing>
                 <property name="expand">False</property>
@@ -68,11 +103,12 @@
           </packing>
         </child>
         <child>
-          <widget class="GtkHBox" id="hbox1">
+          <widget class="GtkHPaned" id="hpaned1">
             <property name="visible">True</property>
+            <property name="can_focus">True</property>
             <child>
               <widget class="GtkScrolledWindow" id="PhoneListsScroll">
-                <property name="width_request">250</property>
+                <property name="width_request">33</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
@@ -82,11 +118,13 @@
                 </child>
               </widget>
               <packing>
-                <property name="expand">False</property>
+                <property name="resize">True</property>
+                <property name="shrink">True</property>
               </packing>
             </child>
             <child>
               <widget class="GtkScrolledWindow" id="PhoneListScroll">
+                <property name="width_request">66</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
@@ -96,13 +134,11 @@
                 </child>
               </widget>
               <packing>
-                <property name="position">1</property>
+                <property name="resize">True</property>
+                <property name="shrink">True</property>
               </packing>
             </child>
           </widget>
-          <packing>
-            <property name="position">1</property>
-          </packing>
         </child>
         <child>
           <widget class="GtkStatusbar" id="StatusBar">
