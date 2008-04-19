@@ -14,3 +14,4 @@ int IsPhoneListModified(char *name);
 void SetPhoneListModified(char *name, int modified);
 int anyModifiedPhoneLists();
 void SavePhoneList(char *name);
+void newPhoneFile(char *filename);

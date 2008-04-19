@@ -168,6 +168,9 @@ void writeAllLists(){
   } while ((walker = GetNext(phoneLists)) != NULL);
 }
 
+void newPhoneFile(char *name){
+  fclose(fopen(name, "w"));
+}
 
 void writePhoneFile(tList * list, char * file){
   FILE *out;

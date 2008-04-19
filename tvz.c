@@ -70,9 +70,13 @@ void checkModify(char *filename){
   }
 }
 
-gboolean closeListByName(char *name){
-  GtkTreeIter iter = getIterByFilename(name);
-
+gboolean closeListByName(char *name, GtkTreeIter *iterPtr){
+ GtkTreeIter iter;
+  if (iterPtr == NULL){
+    GtkTreeIter iter = getIterByFilename(name);
+  } else {
+    iter = *iterPtr;
+  }
   checkModify(name);
   RemovePhoneList(name);
   return gtk_list_store_remove(listsListStore, &iter);
@@ -93,14 +97,54 @@ int askYesNo(char *title){
   return ret;
 }
 
+void fetchNewListFile(char *selectorTitle, char *existMsg, int type){
+  GtkWidget *fileSel;
+  char *filename;
+
+  fileSel = gtk_file_chooser_dialog_new (selectorTitle,
+      (GtkWindow*)main_app_window,
+      type,
+      GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+      GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+      NULL);
+
+  if (gtk_dialog_run (GTK_DIALOG (fileSel)) == GTK_RESPONSE_ACCEPT){
+    filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (fileSel));
+    if (GetPhoneList(filename) == NULL){
+      if (type == GTK_FILE_CHOOSER_ACTION_SAVE){
+        newPhoneFile(filename);
+      }
+      if(pushPhoneList(readPhoneFile(filename), filename) == OK){
+	addListsListElm(filename);
+      }
+    } else {
+      if(askYesNo(existMsg)){
+	closeListByName(filename, NULL);
+	if(pushPhoneList(readPhoneFile(filename), filename) == OK){
+	  addListsListElm(filename);
+	}
+      }
+    }
+    GtkTreeIter iter = getIterByFilename(filename);
+    if(gtk_list_store_iter_is_valid(listsListStore, &iter)){
+      gtk_tree_selection_select_iter(listsListSel, &iter);
+    }
+    g_free (filename);
+  }
+  gtk_widget_destroy (fileSel);
+}
+
 void closeButtonClicked(GtkWidget *widget, GdkEvent *event, gpointer data){
   g_print ("Close\n");
   GtkTreeIter iter;
   char* name;
   if(gtk_tree_selection_get_selected (listsListSel, NULL, &iter)){
 
-    gtk_tree_model_get((GtkTreeModel*)listsListStore, &iter, NAME_LISTS_COLUMN, &name, -1);
-    gtk_list_store_remove(listsListStore, &iter);
+    if(gtk_list_store_iter_is_valid(listsListStore, &iter)){
+      gtk_tree_model_get((GtkTreeModel*)listsListStore, &iter, NAME_LISTS_COLUMN, &name, -1);
+      closeListByName(name, &iter);
+    }
+
   }
 }
 
@@ -117,38 +161,16 @@ void saveButtonClicked(GtkWidget *widget, GdkEvent *event, gpointer data){
   gtk_list_store_set(listsListStore, &iter, NAME_LISTS_COLUMN, "blaasd",-1);
 }
 
+
 void loadButtonClicked(GtkWidget *widget, GdkEvent *event, gpointer data){
-  GtkWidget *fileSel;
-  char *filename;
   g_print ("Load\n");
+  fetchNewListFile("Telefonliste laden", "Datei schon geladen, neu laden?", GTK_FILE_CHOOSER_ACTION_OPEN);
+}
 
 
-  fileSel = gtk_file_chooser_dialog_new ("Lade Telefonliste",
-      (GtkWindow*)main_app_window,
-      GTK_FILE_CHOOSER_ACTION_OPEN,
-      GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-      GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
-      NULL);
-
-  if (gtk_dialog_run (GTK_DIALOG (fileSel)) == GTK_RESPONSE_ACCEPT){
-    filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (fileSel));
-    if (GetPhoneList(filename) == NULL){
-      if(pushPhoneList(readPhoneFile(filename), filename) == OK){
-	addListsListElm(filename);
-      }
-    } else {
-      if(askYesNo("Schon geladen, neu Laden?")){
-	closeListByName(filename);
-	// TODO NeuLaden Implementieren
-      }
-    }
-    GtkTreeIter iter = getIterByFilename(filename);
-    if(gtk_list_store_iter_is_valid(listsListStore, &iter)){
-      gtk_tree_selection_select_iter(listsListSel, &iter);
-    }
-    g_free (filename);
-  }
-  gtk_widget_destroy (fileSel);
+void newButtonClicked(GtkWidget *widget, GdkEvent *event, gpointer data){
+  g_print ("New\n");
+  fetchNewListFile("Neue Telefonliste", "Datei schon geladen, neu laden?", GTK_FILE_CHOOSER_ACTION_SAVE);
 }
 
 /* Wird vor dem beenden ausgefuehrt,
@@ -186,6 +208,7 @@ void initPhonListsList(){
   gtk_tree_view_append_column (GTK_TREE_VIEW (listsList), column);
 
   listsListSel = gtk_tree_view_get_selection (GTK_TREE_VIEW (listsList));
+  gtk_tree_selection_set_mode (listsListSel, GTK_SELECTION_SINGLE);
   gtk_container_add((GtkContainer*)glade_xml_get_widget(xml, "PhoneListsScroll"), listsList);
   gtk_widget_show(listsList);
  
