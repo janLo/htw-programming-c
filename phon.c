@@ -9,14 +9,10 @@
 #include <stdio.h>
 #include <string.h>
 #include "list.h"
+#include "phon.h"
 
 #define BUFFERSIZE 1024
 
-typedef struct dataEntry {
-  char * name;
-  char * given;
-  char * phone;
-} tDataEntry;
 
 typedef struct phoneList {
   int modified;

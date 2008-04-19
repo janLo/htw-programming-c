@@ -13,6 +13,7 @@
 #include <glade/glade.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "list.h"
 #include "phon.h"
 
@@ -30,12 +31,85 @@ enum
   N_LISTS_COLUMNS
 };
 
+typedef struct phoneListStore{
+  GtkListStore * store;
+  GtkTreeIter * selectedIter;
+  char* name;
+} tPhoneListStore;
+
 GtkWidget *main_app_window;
 GladeXML *xml;
 GtkListStore *listsListStore;
 GtkListStore *phoneDefaultStore;
 GtkTreeSelection *listsListSel;
 GtkTreeSelection *phoneListSel;
+tList *phoneModelLists = NULL;
+GtkWidget *phoneView;
+
+void addPhoneModelList(char *name){
+  tList *list = GetPhoneList(name);
+  GtkTreeIter iter;
+  GtkListStore *store;
+  tDataEntry * entry;
+  char *listName;
+  tPhoneListStore * newList;
+  
+  if (phoneModelLists == NULL){
+    phoneModelLists = CreateList();
+  }
+  store = gtk_list_store_new(PHONE_N_COLUMNS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+  
+  listName = malloc(sizeof(char)*strlen(name)+2);
+  strcpy(listName, name);
+
+  newList = malloc(sizeof(tPhoneListStore));
+  newList->store = store;
+  newList->name = listName;
+  newList->selectedIter = NULL;
+
+  InsertTail(phoneModelLists, newList);
+
+  if ((entry = GetFirst(list)) != NULL){
+    do {
+      gtk_list_store_append(store, &iter);
+      gtk_list_store_set(store, &iter, 
+	  PHONE_NAME_COLUMN, entry->name,
+	  PHONE_GIVEN_COLUMN, entry->given,
+	  PHONE_COLUMN, entry->phone,
+	  -1);
+    } while ((entry = GetNext(list)) != NULL);
+  }
+}
+
+tPhoneListStore * getPhoneModel(char *name){
+  tPhoneListStore * walker;
+  if (phoneModelLists == NULL){
+    return NULL;
+  }
+  if ((walker = GetFirst(phoneModelLists)) != NULL){
+    do {
+      if (strcmp(walker->name, name) == 0){
+	return walker;
+      }
+    } while ((walker = GetNext(phoneModelLists)) != NULL);
+  }
+  return NULL;
+}
+
+void removePhoneStore(char *name){
+  GtkTreeIter iter1,iter2;
+  tPhoneListStore * elm = getPhoneModel(name);
+  gboolean valid;
+  if (elm != NULL){
+    RemoveItem(phoneModelLists);
+    free(elm->name);
+    valid = gtk_tree_model_get_iter_first (GTK_TREE_MODEL(elm->store), &iter1);
+
+    while(gtk_list_store_remove(elm->store, &iter1));
+    free(elm);
+  }
+
+}
 
 void addListsListElm(char *name){
   GtkTreeIter iter;
@@ -81,6 +155,7 @@ gboolean closeListByName(char *name, GtkTreeIter *iterPtr){
   }
   checkModify(name);
   RemovePhoneList(name);
+  removePhoneStore(name);
   return gtk_list_store_remove(listsListStore, &iter);
 }
 
@@ -117,12 +192,14 @@ void fetchNewListFile(char *selectorTitle, char *existMsg, int type){
         newPhoneFile(filename);
       }
       if(pushPhoneList(readPhoneFile(filename), filename) == OK){
+	addPhoneModelList(filename);
 	addListsListElm(filename);
       }
     } else {
       if(askYesNo(existMsg)){
 	closeListByName(filename, NULL);
 	if(pushPhoneList(readPhoneFile(filename), filename) == OK){
+	  addPhoneModelList(filename);
 	  addListsListElm(filename);
 	}
       }
@@ -200,6 +277,28 @@ static void destroy( GtkWidget *widget, gpointer data ){
   gtk_main_quit ();
 }
 
+static void tree_selection_changed_cb (GtkTreeSelection *selection, gpointer data){
+  GtkTreeIter iter;
+  GtkTreeModel *model;
+  char *name;
+  tPhoneListStore * phoneModel;
+
+  if (gtk_tree_selection_get_selected (selection, &model, &iter)){
+
+    gtk_tree_model_get (model, &iter, NAME_LISTS_COLUMN, &name, -1);
+    
+    if((phoneModel = getPhoneModel(name)) != NULL){
+      gtk_tree_view_set_model(GTK_TREE_VIEW(phoneView), GTK_TREE_MODEL(phoneModel->store));
+    }
+
+    g_print ("You selected list: %s\n", name);
+    // ToDo Hier die Models wechseln
+
+    
+    g_free (name);
+  }
+}
+
 void initPhonListsList(){
   GtkWidget *listsList;
   GtkTreeIter iter;
@@ -217,12 +316,13 @@ void initPhonListsList(){
 
   listsListSel = gtk_tree_view_get_selection (GTK_TREE_VIEW (listsList));
   gtk_tree_selection_set_mode (listsListSel, GTK_SELECTION_SINGLE);
+  g_signal_connect (G_OBJECT (listsListSel), "changed", G_CALLBACK (tree_selection_changed_cb), NULL);
+
   gtk_container_add((GtkContainer*)glade_xml_get_widget(xml, "PhoneListsScroll"), listsList);
   gtk_widget_show(listsList);
 }
 
 void initPhoneList(){
-  GtkWidget *phoneView;
   GtkTreeIter iter;
   GtkCellRenderer *renderer;
   GtkTreeViewColumn *column;

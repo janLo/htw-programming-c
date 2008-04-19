@@ -5,6 +5,13 @@
  * -- Jan Losinski, 2008/04/14
  *  */
 
+typedef struct dataEntry {
+  char * name;
+  char * given;
+  char * phone;
+} tDataEntry;
+
+
 tList * GetPhoneList(char *name);
 void writeAllLists();
 int pushPhoneList(tList *list, char *name);
