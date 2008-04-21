@@ -23,9 +23,7 @@ typedef struct phoneList {
 /* Funktionsdefinitionen */
 void writePhoneFile(tList * list, char * file);
 tList * readPhoneFile(char * filename);
-tDataEntry * createEntry(char * name, char * given, char * phone);
-int searchEntryAddPoint(tList * list, char * name);
-int insertEntrySorted(tList * list, tDataEntry * entry);
+int searchEntryAddPoint(tList * list, char * name, int *idx);
 tPhoneList * GetPhoneListElm(char * name);
 
 /* Variablen */
@@ -35,6 +33,17 @@ static tList * phoneLists = NULL;
 
 
 /* ..Code.. */
+
+void RemoveByIdx(tList *list, int idx){
+  tDataEntry * ent = NULL; 
+  if ((ent = GetIndexed(list, idx)) != NULL){
+    free (ent->name);
+    free(ent->given);
+    free(ent->phone);
+    free(ent);
+    RemoveItem(list);
+  }
+}
 
 void RemovePhoneList(char *name){
   tPhoneList *elm = NULL;
@@ -240,18 +249,20 @@ tDataEntry * createEntry(char * name, char * given, char * phone){
   return newEntry;
 }
 
-int searchEntryAddPoint(tList * list, char * name){
+int searchEntryAddPoint(tList * list, char * name, int *idx){
   tDataEntry * walker = NULL;
   int i = 0;
   if ( (walker = (tDataEntry*)GetFirst(list)) == NULL){
+    *idx = -1;
     return 0;
   }
-  while ((walker != NULL) && (strcmp(walker->name, name) <= 0)){
+  while ((walker != NULL) && (strcasecmp(walker->name, name) <= 0)){
     printf("Search Add: '%s' < '%s'\n", walker->name, name);
     if ((walker = GetNext(list)) != NULL){
       i++;
     }
   }
+  *idx = i;
   if(walker == NULL){
     return 1;
   }
@@ -259,12 +270,15 @@ int searchEntryAddPoint(tList * list, char * name){
 }
 
 int insertEntrySorted(tList * list, tDataEntry * entry){
-  if(searchEntryAddPoint(list, entry->name)){
+  int addIndex;
+  if(searchEntryAddPoint(list, entry->name, &addIndex)){
     InsertTail(list, entry);
+    addIndex = -1;
   } else {
     InsertBefore(list, entry);
   }
   printf("Inserted: %s - %s - %s\n",entry->name, entry->given, entry->phone);
+  return addIndex;
 }
 
 

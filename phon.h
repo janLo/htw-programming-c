@@ -22,3 +22,6 @@ void SetPhoneListModified(char *name, int modified);
 int anyModifiedPhoneLists();
 void SavePhoneList(char *name);
 void newPhoneFile(char *filename);
+void RemoveByIdx(tList *list, int idx);
+int insertEntrySorted(tList * list, tDataEntry * entry);
+tDataEntry * createEntry(char * name, char * given, char * phone);
