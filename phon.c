@@ -147,6 +147,16 @@ int isPhoneListModified(char *name){
   }
 }
 
+/* Setzt das modified-Flag für eine Telefonliste.
+ * Die Telefonliste wird dabei aus der Liste der 
+ * Telefonlisten gesucht.
+ * Args:
+ *   name     .. Der Name der Liste
+ *   modified .. der Wert auf den das Flag gesetzt 
+ *               werden soll
+ * Ret:
+ *   Nichts
+ * */
 void setPhoneListModified(char *name, int modified){
   tPhoneList *elm = NULL;
   if((elm = getPhoneListElm(name)) == NULL){
@@ -157,14 +167,20 @@ void setPhoneListModified(char *name, int modified){
   return;
 }
 
+/* Holt ein tPhoneList Element aus der Liste der
+ * Telefonlisten, dessen Name gleich dem 
+ * uebergebenem String ist.
+ * Args:
+ *   name .. Name nach dem gesucht wird
+ * Ret: 
+ *   Das tPhoneList Element
+ * */
 tPhoneList * getPhoneListElm(char * name){
   tPhoneList * walker = NULL;
-
   if ((phoneLists == NULL) || ((walker = GetFirst(phoneLists)) == NULL)){
     // printf("Keine Telefonlisten\n");
     return NULL;
   }
-
   do {
     // printf("Vergleiche: %s <=> %s \n", walker->listName, name);
     if (strcmp(walker->listName, name) == 0){
@@ -174,23 +190,42 @@ tPhoneList * getPhoneListElm(char * name){
   return NULL;
 }
 
+/* Prüeft ob irgend eine Liste seit dem Speichern
+ * veraendert wurde.
+ * Dazu geht es die komplette Telefonlisten-Liste 
+ * durch, wertet das modified flag aus und bricht 
+ * bei dem ersten gesetzten modified flag ab.
+ * Args:
+ *   Nichts
+ * Ret:
+ *   != 0 .. wenn min. ein modified flag gesetzt
+ *   == 0 .. Sonst
+ * */
 int anyModifiedPhoneLists(){
   tPhoneList * walker = NULL;
-
   if ((phoneLists == NULL) || ((walker = GetFirst(phoneLists)) == NULL)){
     // printf("Keine Telefonlisten\n");
     return 0;
   }
-
   do {
     if (walker->modified == MODIFIED){
       return MODIFIED;
     }
   } while ((walker = GetNext(phoneLists)) != NULL);
   return 0;
-  
 }
 
+/* Fuegt eine Telefonliste zur Liste der Telefon-
+ * listen unter einem bestimmtem Namen hinzu.
+ * Dazu generiert es ein neues tPhoneList Element,
+ * setzt dessen members und fuegt es der Liste hinzu.
+ * Args:
+ *   list .. Die Hinzuzufuegende Liste
+ *   name .. Der Name unter dem hinzugefuegt wird
+ * Ret:
+ *   OK   .. Im Erfolgsfall
+ *   FAIL .. Sonst
+ * */
 int pushPhoneList(tList * list, char * name){
   char* listName = NULL;
   tPhoneList * newList = NULL;
@@ -210,6 +245,14 @@ int pushPhoneList(tList * list, char * name){
   return OK;
 }
 
+/* Schreibt alle Listen auf die Platte.
+ * Dazu wird die Liste der Listen durchgegangen und
+ * fuer jede Liste die Speicherfunktion aufgerufen.
+ * Args:
+ *   Nichts
+ * Ret:
+ *   Nichts
+ * */
 void writeAllLists(){
   tPhoneList * walker = NULL;
 
@@ -218,16 +261,36 @@ void writeAllLists(){
     exit(-1);
     return;
   }
-
   do {
     writePhoneFile(walker->list, walker->listName);
   } while ((walker = GetNext(phoneLists)) != NULL);
 }
 
+/* Erzeugt eine neue Listendatei mit einem bestimmtem 
+ * Namen.
+ * Dazu wird die Datei zum schreiben geöffnen und 
+ * gleich wieder geschlossen.
+ * Args:
+ *   name .. Der Name der neuen Datei
+ * Ret: 
+ *   Nichts
+ * */
 void newPhoneFile(char *name){
   fclose(fopen(name, "w"));
 }
 
+/* Schreibt eine Telefonliste auf die Platte.
+ * Dazu geht es die Liste von oben nach unten durch
+ * und schreibt fuer jeden Eintrag 4 Zeilen:
+ * Erst den Namen, dann den Vornamen, dann die 
+ * Telefonnummer und noch eine Leerzeile als Trennung
+ * zum nächstem Eintrag.
+ * Args:
+ *   list .. Zu schreibende Liste
+ *   file .. Dateiname
+ * Ret:
+ *   Nichts
+ * */
 void writePhoneFile(tList * list, char * file){
   FILE *out;
   tDataEntry * walker = NULL;
@@ -248,11 +311,31 @@ void writePhoneFile(tList * list, char * file){
   return; 
 }
 
+/* Liest eine Telefonliste von der Platte.
+ * Dazu wird die Datei zeilenweise eingelesen,
+ * wobei das selbe Format erwartet wird, wie das,
+ * welches writePhoneFile schreibbt, d.h. zuerst
+ * eine Zeile Name, dann eine Zeile Vorname, dann
+ * eine Zeile Telefonnummer und noch eine Leer-
+ * zeile am Schluss eines jeden Eintrags.
+ * Die Zeilen werden dabei einfach durch einen
+ * Zähler zugeordnet, welcher bei jeder Zeile um 
+ * eins incrementiert mod 4 wird.
+ * Sobald ein Eintrag vollst. gelesen ist (immer 
+ * bei der Leerzeile) wird ein neues tDataEntry 
+ * Element mit den eingelesenen Daten erzeugt, 
+ * welches nach namen sortiert in eine neue, 
+ * ebenfalls in dieser Funktion generierten,
+ * Telefonliste eingefuegt wird.
+ * Args: 
+ *   file .. Name der einzulesenden Datei
+ * Ret:
+ *   Die eingelesenen Liste
+ * */
 tList * readPhoneFile(char * file){
   FILE *in; 
   char buffer[BUFFERSIZE];
   int state = 0;
-
   char * nameTmp;
   char * givenTmp;
   char * phoneTmp;
@@ -273,18 +356,18 @@ tList * readPhoneFile(char * file){
     strncpy(tmp, buffer, strlen(buffer)+1);
     // printf("Readfile State: %d String: %s Orig:%s\n", state, tmp, buffer);
     switch (state){
-  	case 0: 
-	  nameTmp = tmp;
-	  break;
-	case 1:
-	  givenTmp = tmp;
-	  break;
-	case 2:
-	  phoneTmp = tmp;
-	  break;
-	case 3:
-	  insertEntrySorted(list, createEntry(nameTmp, givenTmp, phoneTmp));
-	  break;
+      case 0: 
+	nameTmp = tmp;
+	break;
+      case 1:
+	givenTmp = tmp;
+	break;
+      case 2:
+	phoneTmp = tmp;
+	break;
+      case 3:
+	insertEntrySorted(list, createEntry(nameTmp, givenTmp, phoneTmp));
+	break;
     }
     *(buffer) = '\n';
     state = (state + 1) % 4;
@@ -292,7 +375,16 @@ tList * readPhoneFile(char * file){
   fclose(in);
   return list;
 }
-  
+
+/* Generiert ein neues tDataEntry Element, welches eien
+ * Datensatz in einer Telefonliste repraesentiert.
+ * Args:
+ *   name  .. Der Name des neuen Eintrages
+ *   given .. Der Vorname des neuen Eintrages
+ *   phone .. Die Telefonnummer des neuen Einrages
+ * Ret:
+ *   Der neu generierte Eintrag
+ * */
 tDataEntry * createEntry(char * name, char * given, char * phone){
   tDataEntry * newEntry = malloc(sizeof(tDataEntry));
   newEntry->name = name;
@@ -301,6 +393,24 @@ tDataEntry * createEntry(char * name, char * given, char * phone){
   return newEntry;
 }
 
+/* Sucht den 'Einfuegepunkt' fuer einen neuen Eintrag.
+ * Dazu werden die Namen der bereits in der Liste vorhandenen
+ * Eintraege mit dem neuen Namen verglichen und der Eintrag, 
+ * welcher in zukunft 'hinter' dem neuen Eintrag liegen soll 
+ * selektiert. Damit kann dann leicht der neue Eintrag 'vor'
+ * dem aktuellem eingefuegt werden.
+ * Wenn Das neue Element 'am ende' eingefuegt werden sollte 
+ * wird 1 zurueckgegeben, sonst 0.
+ * Zudem wird noch der Index des gefundenen Eintrages in *idx 
+ * gespeichert
+ * Args:
+ *   list .. Die Liste in der gesucht werden soll
+ *   name .. Der Name des neuen Elementes
+ *   idx  .. Der Index des gefindenen Elementes
+ * Ret:
+ *   1 .. Wenn das neue Element an das Ende der Liste soll
+ *   0 .. Sonst
+ * */
 int searchEntryAddPoint(tList * list, char * name, int *idx){
   tDataEntry * walker = NULL;
   int i = 0;
@@ -321,6 +431,17 @@ int searchEntryAddPoint(tList * list, char * name, int *idx){
   return 0;
 }
 
+/* Fuegt ein neues Element sortiert in die Liste ein.
+ * Dazu ruft es zuerst die Funktion zum finden des 
+ * Einfuegepunktes auf und fuegt es dann vor diesem oder 
+ * am ende der Liste ein.
+ * Zurueckgegeben wird der Index des neue Elementes.
+ * Args:
+ *   list  .. Die Liste in die eingefuegt werden soll
+ *   entry .. Der neue Eintrag
+ * Ret:
+ *   Der Index des neuen Elementes (buggy)
+ * */
 int insertEntrySorted(tList * list, tDataEntry * entry){
   int addIndex;
   if(searchEntryAddPoint(list, entry->name, &addIndex)){
