@@ -401,7 +401,9 @@ gboolean closeListByName(char *name, GtkTreeIter *iterPtr){
 /* Laed ein neues Listenfile bzw. erzeugt
  * eine neue Liste.
  * Dazu wird ein Dateiauswahl-Dialog angezeigt,
- * dessen Ergebnis der Lietenname ist.
+ * dessen Ergebnis der Listenname ist.
+ * Es wird auch ueberprueft ob die Datei bereits 
+ * geladen ist.
  * Args:
  *   selectorTitle .. Der Titel der Dateiauswahl
  *   existMsg      .. Der Text der in dem Dialog 
@@ -455,38 +457,30 @@ void fetchNewListFile(char *selectorTitle, char *existMsg, int type){
   gtk_widget_destroy (fileSel);
 }
 
+/* ****** Callback - Funktionen ******
+ * Diese Funktionen werden aufgerufen, wenn irgend
+ * ein relevantes GUI-Event (klicken von Buttons)
+ * eintrifft. */
 
+/* Ein Telefonlisten-Eintrag soll geaendert werden */
 void modifyEntryButtonCliked(GtkWidget *widget, GdkEvent *event, gpointer data){
-  // g_print ("ModEntry\n");
-  
-  //TODO Schauen ob überhaupt eine Liste selektiert
-
   modifyPhoneList(E_MOD);
-
 }
+/* Es soll ein neuer Telefonlisten-Eintrag erzeugt
+ * werden */
 void newEntryButtonClicked(GtkWidget *widget, GdkEvent *event, gpointer data){
-  // g_print ("ModEntry\n");
-  
-  //TODO Schauen ob überhaupt eine Liste selektiert
-
   modifyPhoneList(E_NEW);
-
 }
+/* Ein Telefonlisteneintrag soll entfernt werden */
 void removeEntryButtonClicked(GtkWidget *widget, GdkEvent *event, gpointer data){
-  // g_print ("ModEntry\n");
-  
-  //TODO Schauen ob überhaupt eine Liste selektiert
-
   modifyPhoneList(E_DEL);
-
 }
 
+/* Eine Telefonliste soll geschlossen werden */
 void closeButtonClicked(GtkWidget *widget, GdkEvent *event, gpointer data){
-  // g_print ("Close\n");
   GtkTreeIter iter;
   char* name;
   if(gtk_tree_selection_get_selected (listsListSel, NULL, &iter)){
-
     if(gtk_list_store_iter_is_valid(listsListStore, &iter)){
       gtk_tree_model_get((GtkTreeModel*)listsListStore, &iter, NAME_LISTS_COLUMN, &name, -1);
       closeListByName(name, &iter);
@@ -499,74 +493,77 @@ void closeButtonClicked(GtkWidget *widget, GdkEvent *event, gpointer data){
   }
 }
 
+/* Alle Telefonlisten sollen gespeichert werden */
 void saveAllButtonClicked(GtkWidget *widget, GdkEvent *event, gpointer data){
-  // g_print ("SaveAll\n");
   writeAllLists();
 }
 
+/* Eine Telefonliste soll gespeichert werden */
 void saveButtonClicked(GtkWidget *widget, GdkEvent *event, gpointer data){
   GtkTreeIter iter;
   char* name;
-
-  // g_print ("Save\n");
   if(gtk_tree_selection_get_selected (listsListSel, NULL, &iter)){
-
     if(gtk_list_store_iter_is_valid(listsListStore, &iter)){
       gtk_tree_model_get((GtkTreeModel*)listsListStore, &iter, NAME_LISTS_COLUMN, &name, -1);
-      //TODO Implemetieren 
-      //
       savePhoneList(name); 
     }
   }
 }
 
+/* Eine Telefonliste soll geladen werden */
 void loadButtonClicked(GtkWidget *widget, GdkEvent *event, gpointer data){
-  // g_print ("Load\n");
   fetchNewListFile("Telefonliste laden", "Datei schon geladen, neu laden?", GTK_FILE_CHOOSER_ACTION_OPEN);
 }
 
+/* Eine neue Telefonliste soll erzeugt werden */
 void newButtonClicked(GtkWidget *widget, GdkEvent *event, gpointer data){
-  // g_print ("New\n");
   fetchNewListFile("Neue Telefonliste", "Datei schon geladen, neu laden?", GTK_FILE_CHOOSER_ACTION_SAVE);
 }
 
 /* Wird vor dem beenden ausgefuehrt,
- * fragt ob gespeichert werden soll */
+ * fragt ob gespeichert werden soll,
+ * sofern noch ungespeicherte Listen
+ * offen sind */
 static gboolean delete_event( GtkWidget *widget, GdkEvent *event, gpointer data){
   if(anyModifiedPhoneLists()){
     if(askYesNo("noch Speichern?")){
-      // g_print ("SaveAll\n");
       writeAllLists();
     }
   }
-  
   return FALSE;
 }
 
-/* Beendet letztendlich den Event-Loop */
+/* Beendet letztendlich den Event-Loop 
+ * und schließt das Hauptfenster */
 static void destroy( GtkWidget *widget, gpointer data ){
-  // g_print ("Und Tschuess\n");
   gtk_main_quit ();
 }
 
+/* Wird ausgeführt, wenn eine eine Telefnliste
+ * ausgewaehlt wird.
+ * Wechselt dann das Datenmodell der Telefon-
+ * listenansicht. */
 static void listsListSelectionChanged (GtkTreeSelection *selection, gpointer data){
   GtkTreeIter iter;
   GtkTreeModel *model;
   char *name;
   tPhoneListStore * phoneModel;
-
   if (gtk_tree_selection_get_selected (selection, &model, &iter)){
-
     gtk_tree_model_get (model, &iter, NAME_LISTS_COLUMN, &name, -1);
-    
     if((phoneModel = getPhoneModel(name)) != NULL){
       gtk_tree_view_set_model(GTK_TREE_VIEW(phoneView), GTK_TREE_MODEL(phoneModel->store));
     }
-    // g_print ("You selected list: %s\n", name);
     g_free (name);
   }
 }
 
+
+
+/* ****** Initialisieren von GUI-Elementen *******
+ * Diese Funktionen dienen der einmaligen 
+ * initialisierung einiger GUI-Elemente */
+
+/* Initialisiert die Telefonlisten-Liste */
 void initPhonListsList(){
   GtkWidget *listsList;
   GtkCellRenderer *renderer;
@@ -580,15 +577,14 @@ void initPhonListsList(){
       "text", NAME_LISTS_COLUMN,
       NULL);
   gtk_tree_view_append_column (GTK_TREE_VIEW (listsList), column);
-
   listsListSel = gtk_tree_view_get_selection (GTK_TREE_VIEW (listsList));
   gtk_tree_selection_set_mode (listsListSel, GTK_SELECTION_SINGLE);
   g_signal_connect (G_OBJECT (listsListSel), "changed", G_CALLBACK (listsListSelectionChanged), NULL);
-
   gtk_container_add((GtkContainer*)glade_xml_get_widget(xml, "PhoneListsScroll"), listsList);
   gtk_widget_show(listsList);
 }
 
+/* Initialisiert die Telefonliste */
 void initPhoneList(){
   GtkCellRenderer *renderer;
   GtkTreeViewColumn *column;
@@ -613,14 +609,14 @@ void initPhoneList(){
       "text", PHONE_COLUMN,
       NULL);
   gtk_tree_view_append_column (GTK_TREE_VIEW (phoneView), column);
-
   phoneListSel = gtk_tree_view_get_selection (GTK_TREE_VIEW (phoneView));
   gtk_tree_selection_set_mode (phoneListSel, GTK_SELECTION_SINGLE);
   gtk_container_add((GtkContainer*)glade_xml_get_widget(xml, "PhoneListScroll"), phoneView);
   gtk_widget_show(phoneView);
-
 }
 
+/* Initialisiert den Dialog zum aendern
+ * und anlegen von Telefonlisten-Eintraegen */
 void intEntryDialog(){
   entryDialog = glade_xml_get_widget(xml,"entryDialog");  
   gtk_dialog_add_button(GTK_DIALOG(entryDialog), GTK_STOCK_OK, GTK_RESPONSE_ACCEPT);
@@ -628,26 +624,38 @@ void intEntryDialog(){
   gtk_widget_hide(entryDialog);
 }
 
+
+/* **** Die Main-Funktion ****
+ * .. Der 'Startpunkt' der Anwendung. 
+ * Hier wird das die GUI beschreibende XML-File geparst
+ * und das HAuptfenster initialisiert.
+ * Außerdem wird hier der Event-Loop gestartet,
+ * welcher auf Nutzereingaben wartet un die entsprechenden 
+ * Callback-Funktionen aufruft.
+ * */
 int main(int argc, char *argv[]) {
 
   gtk_init(&argc, &argv);
 
-  /* load the interface */
+  /* GUI-XML Laden */
   xml = glade_xml_new("UI.glade", NULL, NULL);
 
-  /* connect the signals in the interface */
+  /* Callbaks mit den Siagnalen verbinden */
   glade_xml_signal_autoconnect(xml);
 
-  /* start the event loop */
-
+  /* Hauptfenster 'holen' und Signale zum Schließen der 
+   * Anwendung mit den Callbacks verbinden */
   main_app_window = glade_xml_get_widget(xml, "AppWindow");
   g_signal_connect (G_OBJECT (main_app_window), "delete_event", G_CALLBACK (delete_event), NULL);
   g_signal_connect (G_OBJECT (main_app_window), "destroy", G_CALLBACK (destroy), NULL);
 
+  /* Div. GUI-Elemente initialisieren */
   initPhonListsList();
   initPhoneList();
   intEntryDialog();
 
+  /* Den Eventloop statren */
   gtk_main();
+
   return 0;
 }
