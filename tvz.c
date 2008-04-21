@@ -34,7 +34,7 @@ enum {
   N_LISTS_COLUMNS		/* Anz. Spalten */
 };
 
-/* Aufzaehlung von mögl. Argumenten der Fkt.
+/* Aufzaehlung von moegl. Argumenten der Fkt.
  * die fuer die Modifikation der Telefonlisten 
  * verantwortlich ist 
  * */
@@ -97,7 +97,7 @@ void fillPhoneModel(GtkListStore *store, tList *list){
 /* Laed die Daten aus der Telefonliste neu
  * in das Listenmodell. 
  * Dazu leert es das Modell erst und ruft 
- * anschließend die Funktion zu fuellen des
+ * anschliessend die Funktion zu fuellen des
  * Modells auf.
  * Args:
  *   store .. Das Listenmodell
@@ -113,7 +113,7 @@ void refreshPhoneModel(GtkListStore *store, tList *list){
 /* Generiert ein neues Telefonlistenmodell fuer
  * eine Telefonliste.
  * Dazu holt sie sich die Telefonliste mit dem 
- * entsprechendem Namen, prüft diese auf Existenz,
+ * entsprechendem Namen, prueft diese auf Existenz,
  * generiert ein neues Modell (GtkListStore) und 
  * Modell-Listen-Element (tPhoneListStore), setzt 
  * den Namen und das Modell und ruft die Fkt. zum
@@ -146,7 +146,7 @@ void addPhoneModelList(char *name){
 }
 
 /* Zustaendig fue alleswas auf der Telefonliste passiet.
- * mittels type wird ausgewählt was zu tun ist:
+ * mittels type wird ausgewaehlt was zu tun ist:
  * E_DEL loescht den momentan selektieren Eintrag in der
  * Telefonliste (nach einer Ja/Nein abfrage)
  * E_MOD zeigt einen Dialog zum bearbeitendes momentan
@@ -556,12 +556,12 @@ static gboolean delete_event( GtkWidget *widget, GdkEvent *event, gpointer data)
 }
 
 /* Beendet letztendlich den Event-Loop 
- * und schließt das Hauptfenster */
+ * und schliesst das Hauptfenster */
 static void destroy( GtkWidget *widget, gpointer data ){
   gtk_main_quit ();
 }
 
-/* Wird ausgeführt, wenn eine eine Telefnliste
+/* Wird ausgefuehrt, wenn eine eine Telefnliste
  * ausgewaehlt wird.
  * Wechselt dann das Datenmodell der Telefon-
  * listenansicht. */
@@ -651,7 +651,7 @@ void intEntryDialog(){
  * .. Der 'Startpunkt' der Anwendung. 
  * Hier wird das die GUI beschreibende XML-File geparst
  * und das HAuptfenster initialisiert.
- * Außerdem wird hier der Event-Loop gestartet,
+ * Ausserdem wird hier der Event-Loop gestartet,
  * welcher auf Nutzereingaben wartet un die entsprechenden 
  * Callback-Funktionen aufruft.
  * */
@@ -665,7 +665,7 @@ int main(int argc, char *argv[]) {
   /* Callbaks mit den Siagnalen verbinden */
   glade_xml_signal_autoconnect(xml);
 
-  /* Hauptfenster 'holen' und Signale zum Schließen der 
+  /* Hauptfenster 'holen' und Signale zum Schliessen der 
    * Anwendung mit den Callbacks verbinden */
   main_app_window = glade_xml_get_widget(xml, "AppWindow");
   g_signal_connect (G_OBJECT (main_app_window), "delete_event", G_CALLBACK (delete_event), NULL);
