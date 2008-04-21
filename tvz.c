@@ -297,7 +297,16 @@ void addListsListElm(char *name){
   gtk_list_store_set(listsListStore, &iter, NAME_LISTS_COLUMN, name,-1);
 }
 
-
+/* Gibt einen Iterator zu einem Listeneintrag
+ * in der Teleonlisten-Liste zurueck.
+ * Dazu geht es alle Eintraege durch und 
+ * vergleicht die Namen.
+ * Args:
+ *   filename .. Name der Liste, dessen Iterator
+ *               gesucht wird
+ * Ret:
+ *   Der Iterator zum passenden Eintrag
+ * */
 GtkTreeIter getIterByFilename(char *filename){
   gchar *str_data;
   GtkTreeIter iter;
@@ -318,6 +327,16 @@ GtkTreeIter getIterByFilename(char *filename){
   return iter;
 }
 
+/* Zeigt ein Dialogfenster, welches nach einer
+ * Ja/Nein Entscheidung fragt und gibt das 
+ * Ergebnis zurueck.
+ * Args:
+ *   title .. Titel des Fensters, bzw. Frage
+ *            des Dialogs
+ * Ret:
+ *   ==0   .. Wenn "Nein"
+ *   !=0   .. Wenn "Ja"
+ * */
 int askYesNo(char *title){
   int ret = 0;
   GtkWidget *dialog, *label;
@@ -337,6 +356,14 @@ int askYesNo(char *title){
   return ret;
 }
 
+/* Testet ob eine Liste geaendert wurde und 
+ * fragt ob diese gespeichert werden soll.
+ * Bei Ja wird die Liste gespeichert.
+ * Args:
+ *   filename .. Name der Liste
+ * Ret:
+ *   Nichts
+ * */
 void checkModify(char *filename){
   if(isPhoneListModified(filename)){
     if(askYesNo("Liste geaendert, noch speichern?")){
