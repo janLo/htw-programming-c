@@ -15,12 +15,12 @@
 
 /* Datenstruktur fuer eine Telefonliste.
  * Enthaelt den Namen und die Liste an sich.
- * Außerdem enthaelt es ein Flag um anzuzeigen,
+ * Ausserdem enthaelt es ein Flag um anzuzeigen,
  * das die Liste seit dem letzten Speichern
  * veraendert wurde.
  * */
 typedef struct phoneList {
-  int modified;			/* Zeigt an ob die Liste seit dem letzten Speichern verändert wurde */
+  int modified;			/* Zeigt an ob die Liste seit dem letzten Speichern veraendert wurde */
   tList * list;			/* Die eigendliche Liste */
   char * listName; 		/* Der name der Liste */
 } tPhoneList;
@@ -147,7 +147,7 @@ int isPhoneListModified(char *name){
   }
 }
 
-/* Setzt das modified-Flag für eine Telefonliste.
+/* Setzt das modified-Flag fuer eine Telefonliste.
  * Die Telefonliste wird dabei aus der Liste der 
  * Telefonlisten gesucht.
  * Args:
@@ -190,7 +190,7 @@ tPhoneList * getPhoneListElm(char * name){
   return NULL;
 }
 
-/* Prüeft ob irgend eine Liste seit dem Speichern
+/* Prueeft ob irgend eine Liste seit dem Speichern
  * veraendert wurde.
  * Dazu geht es die komplette Telefonlisten-Liste 
  * durch, wertet das modified flag aus und bricht 
@@ -268,7 +268,7 @@ void writeAllLists(){
 
 /* Erzeugt eine neue Listendatei mit einem bestimmtem 
  * Namen.
- * Dazu wird die Datei zum schreiben geöffnen und 
+ * Dazu wird die Datei zum schreiben geoeffnen und 
  * gleich wieder geschlossen.
  * Args:
  *   name .. Der Name der neuen Datei
@@ -284,7 +284,7 @@ void newPhoneFile(char *name){
  * und schreibt fuer jeden Eintrag 4 Zeilen:
  * Erst den Namen, dann den Vornamen, dann die 
  * Telefonnummer und noch eine Leerzeile als Trennung
- * zum nächstem Eintrag.
+ * zum naechstem Eintrag.
  * Args:
  *   list .. Zu schreibende Liste
  *   file .. Dateiname
@@ -319,7 +319,7 @@ void writePhoneFile(tList * list, char * file){
  * eine Zeile Telefonnummer und noch eine Leer-
  * zeile am Schluss eines jeden Eintrags.
  * Die Zeilen werden dabei einfach durch einen
- * Zähler zugeordnet, welcher bei jeder Zeile um 
+ * Zaehler zugeordnet, welcher bei jeder Zeile um 
  * eins incrementiert mod 4 wird.
  * Sobald ein Eintrag vollst. gelesen ist (immer 
  * bei der Leerzeile) wird ein neues tDataEntry 
