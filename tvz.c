@@ -36,30 +36,45 @@ enum {
 
 /* Aufzaehlung von mögl. Argumenten der Fkt.
  * die fuer die Modifikation der Telefonlisten 
- * verantwortlich ist */
+ * verantwortlich ist 
+ * */
 enum {
   E_DEL,			/* Selekt. Eintr. loeschen */
   E_MOD,			/* Selekt. Eintr. aendern */
   E_NEW				/* neuer Eintrag */
 };
 
-
+/* Datenstruktur fuer eine Telefonliste.
+ * Enthaelt den Namen und das model fuer die 
+ * Telefonliste 
+ * */
 typedef struct phoneListStore{
-  GtkListStore * store;
-  GtkTreeIter * selectedIter;
-  char* name;
+  GtkListStore * store;		/* Listen-Model */
+  char* name;			/* Listen-Name */
 } tPhoneListStore;
 
-GtkWidget *main_app_window;
-GladeXML *xml;
-GtkListStore *listsListStore;
-GtkListStore *phoneDefaultStore;
-GtkTreeSelection *listsListSel;
-GtkTreeSelection *phoneListSel;
-tList *phoneModelLists = NULL;
-GtkWidget *phoneView;
-GtkWidget *entryDialog;
+/* Variablendeklatationen */
+GtkWidget *main_app_window;	/* Das 'Hauptfenster' der Anwendung */
+GladeXML *xml;			/* Das geparste XML-UI-File */
+GtkListStore *listsListStore;	/* Datenmodell der Listen-Liste */
+GtkListStore *phoneDefaultStore;/* Default-Datenmodell der Telefonliste */
+GtkTreeSelection *listsListSel;	/* Auswahl der Listen-Liste */
+GtkTreeSelection *phoneListSel;	/* Auswahl der Telefonliste */
+tList *phoneModelLists = NULL;	/* Liste der Telefonlisten-Modelle */
+GtkWidget *phoneView;		/* Telefonlisten-Ansicht */
+GtkWidget *entryDialog;		/* Dialog zum hinzufuegen/aendern von Eintraegen */
 
+/* Fuellt ein uebergebenes Telefonlisten-Modell mit 
+ * den Daten der uebergebenen Telefonliste
+ * Dazu geht es durch die komplette Telefonliste
+ * und fuegt fuer jeden Eintrag eine Zeile zum 
+ * Modell hinzu.
+ * Args:
+ *   store .. Das Listenmodell
+ *   list  .. Die Liste mit den Daten
+ * Ret:
+ *   Nichts
+ * */
 void fillPhoneModel(GtkListStore *store, tList *list){
   GtkTreeIter iter;
   tDataEntry * entry;
@@ -76,11 +91,35 @@ void fillPhoneModel(GtkListStore *store, tList *list){
   }
 }
 
+/* Laed die Daten aus der Telefonliste neu
+ * in das Listenmodell. 
+ * Dazu leert es das Modell erst und ruft 
+ * anschließend die Funktion zu fuellen des
+ * Modells auf.
+ * Args:
+ *   store .. Das Listenmodell
+ *   list  .. Die Liste mit den Daten
+ * Ret:
+ *   Nichts
+ * */
 void refreshPhoneModel(GtkListStore *store, tList *list){
   gtk_list_store_clear(store);
   fillPhoneModel(store, list);
 }
 
+/* Generiert ein neues Telefonlistenmodell fuer
+ * eine Telefonliste.
+ * Dazu holt sie sich die Telefonliste mit dem 
+ * entsprechendem Namen, prüft diese auf Existenz,
+ * generiert ein neues Modell (GtkListStore) und 
+ * Modell-Listen-Element (tPhoneListStore), setzt 
+ * den Namen und das Modell und ruft die Fkt. zum
+ * fuellen des Modells auf.
+ * Args:
+ *   name .. Name der Liste
+ * Ret: 
+ *   Nichts
+ * */
 void addPhoneModelList(char *name){
   tList *list = getPhoneList(name);
   GtkListStore *store;
@@ -98,15 +137,13 @@ void addPhoneModelList(char *name){
   newList = malloc(sizeof(tPhoneListStore));
   newList->store = store;
   newList->name = listName;
-  newList->selectedIter = NULL;
 
   InsertTail(phoneModelLists, newList);
   fillPhoneModel(store, list);
-
 }
 
-void modifyPhoneList(int type){
 
+void modifyPhoneList(int type){
   GtkEntry *nameField, *givenField, *phoneField;
   GtkTreeIter iter, listsIter;
   GtkTreeModel *model;
@@ -205,6 +242,16 @@ void modifyPhoneList(int type){
   }
 }
 
+/* Sucht ein bestimmtes Telefonlisten-Modell
+ * in der Liste der Telefonlisten-Modelle 
+ * Dazu geht es die komplette Liste durch 
+ * und vergleicht die Namen mit dem uebergebenen.
+ * Args:
+ *   name .. Der Name der gesuchten Liste
+ * Ret:
+ *   Das Modell zum Namen oder NULL (Wenn
+ *   Modell nicht existiert)
+ * */
 tPhoneListStore * getPhoneModel(char *name){
   tPhoneListStore * walker;
   if (phoneModelLists == NULL){
@@ -220,6 +267,13 @@ tPhoneListStore * getPhoneModel(char *name){
   return NULL;
 }
 
+/* Entfernt ein Telefonlisten-Modell,
+ * gibt resourcen frei.
+ * Args:
+ *   name .. Name der zu entfernenden Liste
+ * Ret:
+ *   Nichts
+ * */
 void removePhoneStore(char *name){
   tPhoneListStore * elm = getPhoneModel(name);
   if (elm != NULL){
@@ -228,14 +282,21 @@ void removePhoneStore(char *name){
     gtk_list_store_clear (elm->store);
     free(elm);
   }
-
 }
 
+/* Fuegt ein neues Element zur Liste der
+ * Telefonlisten hinzu
+ * Args:
+ *   name .. Name der Liste
+ * Ret:
+ *   Nichts
+ * */
 void addListsListElm(char *name){
   GtkTreeIter iter;
   gtk_list_store_append(listsListStore, &iter);
   gtk_list_store_set(listsListStore, &iter, NAME_LISTS_COLUMN, name,-1);
 }
+
 
 GtkTreeIter getIterByFilename(char *filename){
   gchar *str_data;
