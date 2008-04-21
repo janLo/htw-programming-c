@@ -193,6 +193,7 @@ void writePhoneFile(tList * list, char * file){
     // printf("Eintrag geschrieben: %s - %s - %s\n", walker->name, walker->given, walker->phone);
   } while ((walker = GetPrev(list)) != NULL);
   fclose(out);
+  setPhoneListModified(file, MODIFIED);
   return; 
 }
 
