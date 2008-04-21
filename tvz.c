@@ -145,7 +145,26 @@ void addPhoneModelList(char *name){
   fillPhoneModel(store, list);
 }
 
-// TODO Doku
+/* Zustaendig fue alleswas auf der Telefonliste passiet.
+ * mittels type wird ausgewählt was zu tun ist:
+ * E_DEL loescht den momentan selektieren Eintrag in der
+ * Telefonliste (nach einer Ja/Nein abfrage)
+ * E_MOD zeigt einen Dialog zum bearbeitendes momentan
+ * selektierten Eintrages und aendert ihn nach erfolgter 
+ * Eingabe
+ * E_NEW Zeigt einen Dialog zum anlegen eines neuen 
+ * Eintrages und legt diesesn nach erfolgter Eingabe
+ * an.
+ * Nach allen 3 Operationen wird das Modell neu geladen
+ * um Konsistent mit den Daten in der eigendlichen 
+ * Liste zu bleiben und die Liste als Bearbeitet markiert.
+ * Args:
+ *   type .. E_DEL - Selektierten Eintrag loeschen
+ *           E_MOD - Selektieren Eintrag aendern
+ *           E_NEW - Neuen Eintag hinzufuegen
+ * Ret:
+ *   Nichts
+ * */
 void modifyPhoneList(int type){
   GtkEntry *nameField, *givenField, *phoneField;
   GtkTreeIter iter, listsIter;
