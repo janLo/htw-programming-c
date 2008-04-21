@@ -44,7 +44,7 @@ tList * CreateList(void){
     newList->listEnd  = NULL;
     newList->listCurr = NULL;
   }
-  printf("Neue Liste gebaut\n");
+  // printf("Neue Liste gebaut\n");
   return newList;
 }
 
@@ -80,7 +80,7 @@ int InsertBehind  (tList* pList, void *pItemIns){
   if (pList->listCurr != NULL){
     next = (pList->listCurr)->pNxt;
   }
-  printf("ListInsert: Next:%p, Pre:%p - Head:%p, End:%p\n",next, pList->listCurr,pList->listHead,pList->listEnd);
+  // printf("ListInsert: Next:%p, Pre:%p - Head:%p, End:%p\n",next, pList->listCurr,pList->listHead,pList->listEnd);
   if ((newItem = CreateItem(next, pList->listCurr, pItemIns)) != NULL){
     if (pList->listHead == NULL){
       pList->listHead = newItem;
@@ -121,7 +121,7 @@ int    InsertBefore  (tList* pList, void *pItemIns){
   if (pList->listCurr != NULL){
     prev = (pList->listCurr)->pPrv;
   }
-  printf("ListInsert: Next:%p, Pre:%p - Head:%p, End:%p\n",pList->listCurr, prev,pList->listHead,pList->listEnd);
+  // printf("ListInsert: Next:%p, Pre:%p - Head:%p, End:%p\n",pList->listCurr, prev,pList->listHead,pList->listEnd);
   if ((newItem = CreateItem(pList->listCurr, prev, pItemIns)) != NULL){
     if (pList->listHead == NULL){
       pList->listHead = newItem;
@@ -220,7 +220,7 @@ void RemoveItem (tList* pList){
  * */           
 void* GetSelected    (tList* pList){
   if (pList->listCurr != NULL){
-    printf("Selected:%p, Pre:%p, Next:%p\n", pList->listCurr, (pList->listCurr)->pPrv, (pList->listCurr)->pNxt);
+    // printf("Selected:%p, Pre:%p, Next:%p\n", pList->listCurr, (pList->listCurr)->pPrv, (pList->listCurr)->pNxt);
     return (pList->listCurr)->pItem;
   } else {
     return NULL;

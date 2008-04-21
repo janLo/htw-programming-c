@@ -1,5 +1,5 @@
 OBJS=list.o phon.o tvz.o
-CFLAGS+= -g 
+CFLAGS+= -g  -Wall
 CC=gcc
 LD=$(CC)
 

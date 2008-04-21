@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.3 on Mon Apr 21 11:47:57 2008 -->
+<!--Generated with glade3 3.4.3 on Mon Apr 21 13:20:12 2008 -->
 <glade-interface>
   <widget class="GtkWindow" id="AppWindow">
     <property name="visible">True</property>
@@ -13,9 +13,21 @@
           <widget class="GtkToolbar" id="ToolBar">
             <property name="visible">True</property>
             <child>
+              <widget class="GtkToolButton" id="NewButton">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">Neue Liste</property>
+                <property name="stock_id">gtk-new</property>
+                <signal name="clicked" handler="newButtonClicked"/>
+              </widget>
+              <packing>
+                <property name="expand">False</property>
+              </packing>
+            </child>
+            <child>
               <widget class="GtkToolButton" id="LoadButton">
                 <property name="visible">True</property>
                 <property name="label" translatable="yes">Liste Laden</property>
+                <property name="stock_id">gtk-open</property>
                 <signal name="clicked" handler="loadButtonClicked"/>
               </widget>
               <packing>
@@ -26,6 +38,7 @@
               <widget class="GtkToolButton" id="SaveButton">
                 <property name="visible">True</property>
                 <property name="label" translatable="yes">Liste Speichen</property>
+                <property name="stock_id">gtk-save</property>
                 <signal name="clicked" handler="saveButtonClicked"/>
               </widget>
               <packing>
@@ -36,6 +49,7 @@
               <widget class="GtkToolButton" id="SaveAllButton">
                 <property name="visible">True</property>
                 <property name="label" translatable="yes">Alles Speichern</property>
+                <property name="stock_id">gtk-save</property>
                 <signal name="clicked" handler="saveAllButtonClicked"/>
               </widget>
               <packing>
@@ -46,17 +60,8 @@
               <widget class="GtkToolButton" id="CloseButton">
                 <property name="visible">True</property>
                 <property name="label" translatable="yes">Liste Schliessen</property>
+                <property name="stock_id">gtk-close</property>
                 <signal name="clicked" handler="closeButtonClicked"/>
-              </widget>
-              <packing>
-                <property name="expand">False</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkToolButton" id="NewButton">
-                <property name="visible">True</property>
-                <property name="label" translatable="yes">Neue Liste</property>
-                <signal name="clicked" handler="newButtonClicked"/>
               </widget>
               <packing>
                 <property name="expand">False</property>
@@ -75,6 +80,7 @@
               <widget class="GtkToolButton" id="newEntryButton">
                 <property name="visible">True</property>
                 <property name="label" translatable="yes">Neuer Eintrag</property>
+                <property name="stock_id">gtk-add</property>
                 <signal name="clicked" handler="newEntryButtonClicked"/>
               </widget>
               <packing>
@@ -85,6 +91,7 @@
               <widget class="GtkToolButton" id="modifyEntryButton">
                 <property name="visible">True</property>
                 <property name="label" translatable="yes">Eintrag bearbeiten</property>
+                <property name="stock_id">gtk-edit</property>
                 <signal name="clicked" handler="modifyEntryButtonCliked"/>
               </widget>
               <packing>
@@ -95,6 +102,7 @@
               <widget class="GtkToolButton" id="removeEntryButton">
                 <property name="visible">True</property>
                 <property name="label" translatable="yes">Eintrag entfernen</property>
+                <property name="stock_id">gtk-remove</property>
                 <signal name="clicked" handler="removeEntryButtonClicked"/>
               </widget>
               <packing>

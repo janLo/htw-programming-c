@@ -1,12 +1,11 @@
 // vim: set sw=2 foldmethod=syntax nowrap:
-/* list.c zu Aufgabe 1
+/* tvz.c zu Aufgabe 1
  * (http://www.informatik.htw-dresden.de/%7Ebeck/C/PspCB1.html)
+ *
+ * Implementiert das GUI zu der "Telefonbuch"-Anwendung
  *
  * -- Jan Losinski, 2008/04/14
  *  */
-/* TODO modified Flag auswerten bei beenden und schliessen
- * TODO New-Button implementieren
- */
 
 
 #include <gtk/gtk.h>
@@ -17,23 +16,31 @@
 #include "list.h"
 #include "phon.h"
 
-
+/* Aufzaehlung fuer die Spalten der Telefonnumern-
+ * Liste 
+ * */
 enum {
-  PHONE_NAME_COLUMN,
-  PHONE_GIVEN_COLUMN,
-  PHONE_COLUMN,
-  PHONE_N_COLUMNS
+  PHONE_NAME_COLUMN,		/* Name */
+  PHONE_GIVEN_COLUMN,		/* Vorname */
+  PHONE_COLUMN,			/* Tel-Nr */
+  PHONE_N_COLUMNS		/* Anz. Spalten */
 };
 
+/* Aufzaehlung fuer die Spalten der Listen-
+ * Liste 
+ * */
 enum {
-  NAME_LISTS_COLUMN,
-  N_LISTS_COLUMNS
+  NAME_LISTS_COLUMN,		/* Listen-Name */
+  N_LISTS_COLUMNS		/* Anz. Spalten */
 };
 
+/* Aufzaehlung von mögl. Argumenten der Fkt.
+ * die fuer die Modifikation der Telefonlisten 
+ * verantwortlich ist */
 enum {
-  E_DEL,
-  E_MOD,
-  E_NEW
+  E_DEL,			/* Selekt. Eintr. loeschen */
+  E_MOD,			/* Selekt. Eintr. aendern */
+  E_NEW				/* neuer Eintrag */
 };
 
 
@@ -75,7 +82,7 @@ void refreshPhoneModel(GtkListStore *store, tList *list){
 }
 
 void addPhoneModelList(char *name){
-  tList *list = GetPhoneList(name);
+  tList *list = getPhoneList(name);
   GtkListStore *store;
   char *listName;
   tPhoneListStore * newList;
@@ -111,7 +118,7 @@ void modifyPhoneList(int type){
   if(gtk_tree_selection_get_selected (listsListSel, NULL, &listsIter)){
     if(gtk_list_store_iter_is_valid(listsListStore, &listsIter)){
       gtk_tree_model_get((GtkTreeModel*)listsListStore, &listsIter, NAME_LISTS_COLUMN, &listName, -1);
-      list = GetPhoneList(listName);
+      list = getPhoneList(listName);
       if (type == E_MOD || type == E_DEL){
 	if( ! gtk_tree_selection_get_selected (phoneListSel, &model, &iter)){
 	  return;
@@ -162,14 +169,15 @@ void modifyPhoneList(int type){
 	gtk_widget_show(label);
       }
 
-      if(GTK_RESPONSE_ACCEPT, gtk_dialog_run(GTK_DIALOG(dialog))){
+      if(GTK_RESPONSE_ACCEPT == gtk_dialog_run(GTK_DIALOG(dialog))){
 	if (type == E_MOD || type == E_DEL){
 	  oldNum = *((gint*)gtk_tree_path_get_indices(gtk_tree_model_get_path(model, &iter)));
-	  g_print("Mod-Num: %d\n", oldNum);
+	  // g_print("Mod-Num: %d\n", oldNum);
 	}
 
 	if (type == E_MOD || type == E_DEL){
-	  RemoveByIdx(list, oldNum);
+	  removeByIdx(list, oldNum);
+	  setPhoneListModified(listName, MODIFIED);
 	}
 	if (type == E_MOD || type == E_NEW){
 	  tmp  = (char*)gtk_entry_get_text (nameField);
@@ -181,9 +189,8 @@ void modifyPhoneList(int type){
 	  tmp = (char*)gtk_entry_get_text (phoneField);
 	  phone = malloc(sizeof(char)*strlen(tmp)+2);
 	  strcpy(phone, tmp);
-
-
 	  insertEntrySorted(list, createEntry(name, given, phone));
+	  setPhoneListModified(listName, MODIFIED);
 	}
 	refreshPhoneModel(GTK_LIST_STORE(model), list);
 
@@ -214,9 +221,7 @@ tPhoneListStore * getPhoneModel(char *name){
 }
 
 void removePhoneStore(char *name){
-  GtkTreeIter iter1,iter2;
   tPhoneListStore * elm = getPhoneModel(name);
-  gboolean valid;
   if (elm != NULL){
     RemoveItem(phoneModelLists);
     free(elm->name);
@@ -252,28 +257,6 @@ GtkTreeIter getIterByFilename(char *filename){
   return iter;
 }
 
-void checkModify(char *filename){
-  if(IsPhoneListModified(filename)){
-    if(askYesNo("Liste geaendert, noch speichern?")){
-      g_print ("Save\n");
-      SavePhoneList(filename); 
-    }
-  }
-}
-
-gboolean closeListByName(char *name, GtkTreeIter *iterPtr){
- GtkTreeIter iter;
-  if (iterPtr == NULL){
-    iter = getIterByFilename(name);
-  } else {
-    iter = *iterPtr;
-  }
-  checkModify(name);
-  RemovePhoneList(name);
-  removePhoneStore(name);
-  return gtk_list_store_remove(listsListStore, &iter);
-}
-
 int askYesNo(char *title){
   int ret = 0;
   GtkWidget *dialog, *label;
@@ -293,6 +276,28 @@ int askYesNo(char *title){
   return ret;
 }
 
+void checkModify(char *filename){
+  if(isPhoneListModified(filename)){
+    if(askYesNo("Liste geaendert, noch speichern?")){
+      // g_print ("Save\n");
+      savePhoneList(filename); 
+    }
+  }
+}
+
+gboolean closeListByName(char *name, GtkTreeIter *iterPtr){
+ GtkTreeIter iter;
+  if (iterPtr == NULL){
+    iter = getIterByFilename(name);
+  } else {
+    iter = *iterPtr;
+  }
+  checkModify(name);
+  removePhoneList(name);
+  removePhoneStore(name);
+  return gtk_list_store_remove(listsListStore, &iter);
+}
+
 void fetchNewListFile(char *selectorTitle, char *existMsg, int type){
   GtkWidget *fileSel;
   char *filename;
@@ -306,7 +311,7 @@ void fetchNewListFile(char *selectorTitle, char *existMsg, int type){
 
   if (gtk_dialog_run (GTK_DIALOG (fileSel)) == GTK_RESPONSE_ACCEPT){
     filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (fileSel));
-    if (GetPhoneList(filename) == NULL){
+    if (getPhoneList(filename) == NULL){
       if (type == GTK_FILE_CHOOSER_ACTION_SAVE){
         newPhoneFile(filename);
       }
@@ -334,7 +339,7 @@ void fetchNewListFile(char *selectorTitle, char *existMsg, int type){
 
 
 void modifyEntryButtonCliked(GtkWidget *widget, GdkEvent *event, gpointer data){
-  g_print ("ModEntry\n");
+  // g_print ("ModEntry\n");
   
   //TODO Schauen ob überhaupt eine Liste selektiert
 
@@ -342,7 +347,7 @@ void modifyEntryButtonCliked(GtkWidget *widget, GdkEvent *event, gpointer data){
 
 }
 void newEntryButtonClicked(GtkWidget *widget, GdkEvent *event, gpointer data){
-  g_print ("ModEntry\n");
+  // g_print ("ModEntry\n");
   
   //TODO Schauen ob überhaupt eine Liste selektiert
 
@@ -350,7 +355,7 @@ void newEntryButtonClicked(GtkWidget *widget, GdkEvent *event, gpointer data){
 
 }
 void removeEntryButtonClicked(GtkWidget *widget, GdkEvent *event, gpointer data){
-  g_print ("ModEntry\n");
+  // g_print ("ModEntry\n");
   
   //TODO Schauen ob überhaupt eine Liste selektiert
 
@@ -359,7 +364,7 @@ void removeEntryButtonClicked(GtkWidget *widget, GdkEvent *event, gpointer data)
 }
 
 void closeButtonClicked(GtkWidget *widget, GdkEvent *event, gpointer data){
-  g_print ("Close\n");
+  // g_print ("Close\n");
   GtkTreeIter iter;
   char* name;
   if(gtk_tree_selection_get_selected (listsListSel, NULL, &iter)){
@@ -377,7 +382,7 @@ void closeButtonClicked(GtkWidget *widget, GdkEvent *event, gpointer data){
 }
 
 void saveAllButtonClicked(GtkWidget *widget, GdkEvent *event, gpointer data){
-  g_print ("SaveAll\n");
+  // g_print ("SaveAll\n");
   writeAllLists();
 }
 
@@ -385,25 +390,25 @@ void saveButtonClicked(GtkWidget *widget, GdkEvent *event, gpointer data){
   GtkTreeIter iter;
   char* name;
 
-  g_print ("Save\n");
+  // g_print ("Save\n");
   if(gtk_tree_selection_get_selected (listsListSel, NULL, &iter)){
 
     if(gtk_list_store_iter_is_valid(listsListStore, &iter)){
       gtk_tree_model_get((GtkTreeModel*)listsListStore, &iter, NAME_LISTS_COLUMN, &name, -1);
       //TODO Implemetieren 
       //
-      SavePhoneList(name); 
+      savePhoneList(name); 
     }
   }
 }
 
 void loadButtonClicked(GtkWidget *widget, GdkEvent *event, gpointer data){
-  g_print ("Load\n");
+  // g_print ("Load\n");
   fetchNewListFile("Telefonliste laden", "Datei schon geladen, neu laden?", GTK_FILE_CHOOSER_ACTION_OPEN);
 }
 
 void newButtonClicked(GtkWidget *widget, GdkEvent *event, gpointer data){
-  g_print ("New\n");
+  // g_print ("New\n");
   fetchNewListFile("Neue Telefonliste", "Datei schon geladen, neu laden?", GTK_FILE_CHOOSER_ACTION_SAVE);
 }
 
@@ -412,7 +417,7 @@ void newButtonClicked(GtkWidget *widget, GdkEvent *event, gpointer data){
 static gboolean delete_event( GtkWidget *widget, GdkEvent *event, gpointer data){
   if(anyModifiedPhoneLists()){
     if(askYesNo("noch Speichern?")){
-      g_print ("SaveAll\n");
+      // g_print ("SaveAll\n");
       writeAllLists();
     }
   }
@@ -422,11 +427,11 @@ static gboolean delete_event( GtkWidget *widget, GdkEvent *event, gpointer data)
 
 /* Beendet letztendlich den Event-Loop */
 static void destroy( GtkWidget *widget, gpointer data ){
-  g_print ("Und Tschuess\n");
+  // g_print ("Und Tschuess\n");
   gtk_main_quit ();
 }
 
-static void tree_selection_changed_cb (GtkTreeSelection *selection, gpointer data){
+static void listsListSelectionChanged (GtkTreeSelection *selection, gpointer data){
   GtkTreeIter iter;
   GtkTreeModel *model;
   char *name;
@@ -439,18 +444,13 @@ static void tree_selection_changed_cb (GtkTreeSelection *selection, gpointer dat
     if((phoneModel = getPhoneModel(name)) != NULL){
       gtk_tree_view_set_model(GTK_TREE_VIEW(phoneView), GTK_TREE_MODEL(phoneModel->store));
     }
-
-    g_print ("You selected list: %s\n", name);
-    // ToDo Hier die Models wechseln
-
-    
+    // g_print ("You selected list: %s\n", name);
     g_free (name);
   }
 }
 
 void initPhonListsList(){
   GtkWidget *listsList;
-  GtkTreeIter iter;
   GtkCellRenderer *renderer;
   GtkTreeViewColumn *column;
   
@@ -465,14 +465,13 @@ void initPhonListsList(){
 
   listsListSel = gtk_tree_view_get_selection (GTK_TREE_VIEW (listsList));
   gtk_tree_selection_set_mode (listsListSel, GTK_SELECTION_SINGLE);
-  g_signal_connect (G_OBJECT (listsListSel), "changed", G_CALLBACK (tree_selection_changed_cb), NULL);
+  g_signal_connect (G_OBJECT (listsListSel), "changed", G_CALLBACK (listsListSelectionChanged), NULL);
 
   gtk_container_add((GtkContainer*)glade_xml_get_widget(xml, "PhoneListsScroll"), listsList);
   gtk_widget_show(listsList);
 }
 
 void initPhoneList(){
-  GtkTreeIter iter;
   GtkCellRenderer *renderer;
   GtkTreeViewColumn *column;
   
@@ -505,8 +504,6 @@ void initPhoneList(){
 }
 
 void intEntryDialog(){
-  g_print ("NewEntry\n");
-  
   entryDialog = glade_xml_get_widget(xml,"entryDialog");  
   gtk_dialog_add_button(GTK_DIALOG(entryDialog), GTK_STOCK_OK, GTK_RESPONSE_ACCEPT);
   gtk_dialog_add_button(GTK_DIALOG(entryDialog), GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT);
