@@ -53,7 +53,7 @@ typedef struct phoneListStore{
   char* name;			/* Listen-Name */
 } tPhoneListStore;
 
-/* Variablendeklatationen */
+/* ******  Variablendeklatationen ******* */
 GtkWidget *main_app_window;	/* Das 'Hauptfenster' der Anwendung */
 GladeXML *xml;			/* Das geparste XML-UI-File */
 GtkListStore *listsListStore;	/* Datenmodell der Listen-Liste */
@@ -63,6 +63,9 @@ GtkTreeSelection *phoneListSel;	/* Auswahl der Telefonliste */
 tList *phoneModelLists = NULL;	/* Liste der Telefonlisten-Modelle */
 GtkWidget *phoneView;		/* Telefonlisten-Ansicht */
 GtkWidget *entryDialog;		/* Dialog zum hinzufuegen/aendern von Eintraegen */
+
+
+/* ********* Funktionen ********* */
 
 /* Fuellt ein uebergebenes Telefonlisten-Modell mit 
  * den Daten der uebergebenen Telefonliste
@@ -142,7 +145,7 @@ void addPhoneModelList(char *name){
   fillPhoneModel(store, list);
 }
 
-
+// TODO Doku
 void modifyPhoneList(int type){
   GtkEntry *nameField, *givenField, *phoneField;
   GtkTreeIter iter, listsIter;
