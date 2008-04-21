@@ -13,11 +13,16 @@
 
 #define BUFFERSIZE 1024
 
-
+/* Datenstruktur fuer eine Telefonliste.
+ * Enthaelt den Namen und die Liste an sich.
+ * Außerdem enthaelt es ein Flag um anzuzeigen,
+ * das die Liste seit dem letzten Speichern
+ * veraendert wurde.
+ * */
 typedef struct phoneList {
-  int modified;
-  tList * list;
-  char * listName;
+  int modified;			/* Zeigt an ob die Liste seit dem letzten Speichern verändert wurde */
+  tList * list;			/* Die eigendliche Liste */
+  char * listName; 		/* Der name der Liste */
 } tPhoneList;
 
 /* Funktionsdefinitionen */
@@ -27,13 +32,22 @@ int searchEntryAddPoint(tList * list, char * name, int *idx);
 tPhoneList * getPhoneListElm(char * name);
 
 /* Variablen */
-static tList * phoneLists = NULL;
+static tList * phoneLists = NULL;	/* Die Liste der Telefonlisten */
 
 
 
 
 /* ..Code.. */
 
+/* Entfernt ein Element von einer Telefonliste, 
+ * welches sich an einem uebergebenen Index 
+ * befindet.
+ * Args:
+ *   list .. Die Liste in der das Element zu finden ist 
+ *   idx  .. Der Index an der sich das Element befindet
+ * Ret: 
+ *   Nichts
+ * */
 void removeByIdx(tList *list, int idx){
   tDataEntry * ent = NULL; 
   if ((ent = GetIndexed(list, idx)) != NULL){
@@ -45,6 +59,14 @@ void removeByIdx(tList *list, int idx){
   }
 }
 
+/* Entfernt eine Komplette Telefonliste aus
+ * der Listen-Liste.
+ * Gibt allle Resourcn wider frei.
+ * Args: 
+ *   name .. Name der zu entfernenden Liste 
+ * Ret: 
+ *   Nichts
+ * */
 void removePhoneList(char *name){
   tPhoneList *elm = NULL;
   tDataEntry *tmp = NULL;
@@ -63,11 +85,21 @@ void removePhoneList(char *name){
       RemoveItem(elm->list);
     } while ((tmp = GetSelected(elm->list)) != NULL);
   }
-  
   DeleteList(elm->list);
   free(elm);
 }
 
+/* Sucht eine Telefonliste mit einem gegebenem
+ * Namen in der Listen-Liste und gibt diese 
+ * zurueck.
+ * Dazu nutzt es die Funktion, die die komplette
+ * Listen-Liste nach tPhoneList - Elementen mit
+ * dem richtigem Namen durchsucht.
+ * Args: 
+ *   name .. Name der zu suchenden Liste
+ * Ret:
+ *   Die Liste passend zum Namen
+ * */
 tList * getPhoneList(char *name){
   tPhoneList *elm = NULL;
   if((elm = getPhoneListElm(name)) == NULL){
@@ -77,6 +109,16 @@ tList * getPhoneList(char *name){
   }
 }
 
+/* Speichert eine Telefonliste mit einem gegebenem 
+ * Namen.
+ * Datu laesst es erst die passende Liste suchen 
+ * und ruft anschliessend die Funktion zum Speichern
+ * mit den passende Argumenten auf.
+ * Args:
+ *   name .. Name der zu speichernden Liste
+ * Ret: 
+ *   Nichts
+ * */
 void savePhoneList(char *name){
   tPhoneList *elm = NULL;
   if((elm = getPhoneListElm(name)) == NULL){
@@ -87,6 +129,15 @@ void savePhoneList(char *name){
   }
 }
 
+/* Prueft ob eine Telefonliste seit dem Speichern
+ * modifiziert wurde.
+ * Dazu laesst es erst die passende Liste suchen 
+ * und gibt dann das modified-flag zurueck.
+ * Args:
+ *   name .. Name der zu pruefenden Liste
+ * Ret:
+ *   Das Modified-Flag der Liste
+ * */
 int isPhoneListModified(char *name){
   tPhoneList *elm = NULL;
   if((elm = getPhoneListElm(name)) == NULL){
