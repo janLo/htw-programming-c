@@ -373,6 +373,18 @@ void checkModify(char *filename){
   }
 }
 
+/* Schliesst eine Liste nach Dateiname
+ * Es werden auch Funktionen zum 
+ * freigeben der Resourcen aufgerufen
+ * Args:
+ *   name .. Name der Liste
+ *   iterPtr .. Iterator des zu entfernenden 
+ *              Elementes. Wenn Null wird der 
+ *              Iterator mit getIterByFilename 
+ *              geholt.
+ * Ret:
+ *   Das Ergebnis von gtk_list_store_remove
+ * */
 gboolean closeListByName(char *name, GtkTreeIter *iterPtr){
  GtkTreeIter iter;
   if (iterPtr == NULL){
@@ -386,6 +398,24 @@ gboolean closeListByName(char *name, GtkTreeIter *iterPtr){
   return gtk_list_store_remove(listsListStore, &iter);
 }
 
+/* Laed ein neues Listenfile bzw. erzeugt
+ * eine neue Liste.
+ * Dazu wird ein Dateiauswahl-Dialog angezeigt,
+ * dessen Ergebnis der Lietenname ist.
+ * Args:
+ *   selectorTitle .. Der Titel der Dateiauswahl
+ *   existMsg      .. Der Text der in dem Dialog 
+ *                    Angezeigt wird, der mitteilt,
+ *                    das die Datei bereits geladen 
+ *                    ist und fragt ob sie neu geladen
+ *                    werden soll.
+ *   type          .. Legt Fest ob es ein "Oeffnen" Dialog
+ *                    (zum oeffnen existierender Listen) 
+ *                    oder ein "Speichern" Dialog (zum 
+ *                    anlegen neuer Listen) sein soll.
+ * Ret:
+ *   Nichts
+ * */
 void fetchNewListFile(char *selectorTitle, char *existMsg, int type){
   GtkWidget *fileSel;
   char *filename;
